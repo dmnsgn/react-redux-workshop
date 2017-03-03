@@ -1,0 +1,7 @@
+{
+  "path": "",
+  "manifest": [
+    { "id": "background-main-nav", "src": "/assets/images/background-main-nav.gif" },
+    { "id": "ui-click", "src": "/assets/sounds/ui-click.mp3" }
+  ]
+}

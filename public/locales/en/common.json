@@ -1,0 +1,4 @@
+{
+  "appName": "react-redux-workshop",
+  "interpolateSample": "HTML: <strong>tags</strong>, props: {{myValue}} and component: {{myComponent}} can be interpolated and formatted {{myStringToFormat, uppercase}}"
+}

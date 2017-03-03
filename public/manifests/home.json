@@ -1,0 +1,7 @@
+{
+  "path": "",
+  "manifest": [
+    { "id": "background-home", "src": "/assets/images/background-home.png" },
+    { "id": "audio-home", "src": "/assets/sounds/audio-home.mp3" }
+  ]
+}

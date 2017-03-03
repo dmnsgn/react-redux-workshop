@@ -1,0 +1,4 @@
+{
+  "appName": "react-redux-workshop",
+  "interpolateSample": "Baguette: <strong>escargot</strong>, fromage: {{myValue}} et vin: {{myComponent}} croissant {{myStringToFormat, uppercase}}"
+}
