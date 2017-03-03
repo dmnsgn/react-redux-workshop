@@ -2,8 +2,12 @@ import './style.css'
 
 import React from 'react'
 
-const App = ({ title }) => (
-  <h1>{title}</h1>
+import Home from '../Home'
+
+const App = () => (
+  <div className="App">
+    <Home />
+  </div>
 )
 
 export default App

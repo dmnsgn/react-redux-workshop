@@ -25,3 +25,8 @@ h1 {
   padding-top: 20px;
   margin: 0;
 }
+
+.PageContent {
+  visibility: hidden;
+  height: 100%;
+}
