@@ -8,7 +8,7 @@ import MainNav from '../MainNav'
 const App = ({ children }) => (
   <div className="App">
     <MainHeader />
-    <MainNav />
+    <MainNav sceneCount={5} />
     {children}
   </div>
 )
