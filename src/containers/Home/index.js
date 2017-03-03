@@ -1,72 +1,78 @@
 import './style.css'
 
 import React, { Component } from 'react'
+import { findDOMNode } from 'react-dom'
 import { translate, Interpolate } from 'react-i18next'
+
+import { default as UtilsPreloader } from '../../utils/preloader'
 
 class Home extends Component {
   constructor(props) {
     super(props)
-
-    console.log('Home constructor()')
 
     this.state = {
       ready: false
     }
   }
 
-  componentWillMount() {
-    console.log('Home componentWillMount()')
-  }
-
   componentDidMount() {
-    console.log('Home componentDidMount()')
-
-    setTimeout(() => {
+    const pAssets = UtilsPreloader.loadManifest('home')
+    pAssets.then(() => {
       this.setState({ ready: true })
-    }, 2000)
-  }
-
-  componentWillReceiveProps(newProps) {
-    console.log('Home componentWillReceiveProps()')
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    console.log('Home shouldComponentUpdate()')
-    return true;
-  }
-
-  componentWillUpdate(nextProps, nextState) {
-    console.log('Home componentWillUpdate()')
+    })
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('Home componentDidUpdate()')
+    const { ready } = this.state
+
+    if (!prevState.ready && ready) {
+      createjs.Sound.play('audio-home', { loop: -1, volume: 0.3 })
+      const content = findDOMNode(this.contentRef)
+      const background = findDOMNode(this.backgroundRef)
+      const title = findDOMNode(this.titleRef)
+      const copy = findDOMNode(this.copyRef)
+
+      content.style.visibility = 'visible'
+      background.style.opacity = 1
+      title.style.opacity = 1
+      title.style.transform = 'translate3d(0, 0, 0)'
+      copy.style.opacity = 1
+      copy.style.transform = 'translate3d(0, 0, 0)'
+    }
   }
 
   componentWillUnmount() {
-    console.log('Home componentWillUnmount()')
+    createjs.Sound.stop('audio-home')
   }
 
   render() {
-    console.log('Home render()')
-
     const { ready } = this.state
     const { t } = this.props
 
-    if (!ready) return <div>Getting ready...</div>
+    let background
+    if (ready) {
+      const backgroundImageItem = UtilsPreloader.getAsset('home', 'background-home', true)
+      const backgroundStyle = {
+        backgroundImage: `url(${backgroundImageItem.src})`
+      }
+      background =
+        <div
+          ref={c => this.backgroundRef = c}
+          className="PageContent-background"
+          style={backgroundStyle}
+        />
+    }
 
     const interpolateComponent = <strong>"I am Custom Component"</strong>;
 
-    const divStyle = {
-      visibility: 'visible'
-    }
-
     return (
-      <div className="PageContent Home" style={divStyle}>
-        <h1 className="PageContent-title">
+      <div ref={c => this.contentRef = c} className="PageContent Home">
+        {background}
+        <h1 ref={c => this.titleRef = c} className="PageContent-title">
           Home component {t('common:appName')}
         </h1>
         <Interpolate
+          ref={c => this.copyRef = c}
           parent='p'
           className="PageContent-copy"
           i18nKey='common:interpolateSample'

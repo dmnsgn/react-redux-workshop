@@ -1,5 +1,8 @@
 import './index.css'
 
+import 'createjs-preloadjs'
+import 'createjs-soundjs'
+
 import React from 'react'
 import { render } from 'react-dom'
 import createHistory from 'history/createBrowserHistory'
