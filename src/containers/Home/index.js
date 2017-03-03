@@ -1,6 +1,7 @@
 import './style.css'
 
 import React, { Component } from 'react'
+import { translate, Interpolate } from 'react-i18next'
 
 class Home extends Component {
   constructor(props) {
@@ -50,17 +51,33 @@ class Home extends Component {
     console.log('Home render()')
 
     const { ready } = this.state
+    const { t } = this.props
 
     if (!ready) return <div>Getting ready...</div>
+
+    const interpolateComponent = <strong>"I am Custom Component"</strong>;
 
     const divStyle = {
       visibility: 'visible'
     }
 
     return (
-      <div className="PageContent Home" style={divStyle}>Ready</div>
+      <div className="PageContent Home" style={divStyle}>
+        <h1 className="PageContent-title">
+          Home component {t('common:appName')}
+        </h1>
+        <Interpolate
+          parent='p'
+          className="PageContent-copy"
+          i18nKey='common:interpolateSample'
+          useDangerouslySetInnerHTML={true}
+          myValue={ready ? 'isReady' : ''}
+          myComponent={interpolateComponent}
+          myStringToFormat="like that"
+        />
+      </div>
     )
   }
 }
 
-export default Home
+export default translate([], { wait: true })(Home)
