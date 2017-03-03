@@ -1,0 +1,6 @@
+.MainNavButton {
+  z-index: 6001;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
