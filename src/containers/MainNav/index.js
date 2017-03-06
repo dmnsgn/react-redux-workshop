@@ -5,6 +5,8 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
 import { NavLink } from 'react-router-dom'
 
+import { toggleMenu, routingTransitionOut, routingTransitionReset } from '../../actions'
+
 class MainNav extends Component {
   static propTypes = {
     active: PropTypes.bool.isRequired,
@@ -18,7 +20,14 @@ class MainNav extends Component {
   }
 
   onNavLinkClick(event) {
-    if (event.target.dataset.to === this.props.location.pathname) event.preventDefault()
+    event.persist()
+    event.preventDefault()
+
+    if (event.target.dataset.to === this.props.location.pathname) return
+
+    this.props.onRoutingTransitionStart()
+    this.props.onChangeRoute(event.target.dataset.to)
+    this.props.onToggleMenu()
   }
 
   render() {
@@ -60,7 +69,16 @@ const mapStateToProps = (state) => ({
   active: state.ui.mainNavOpen
 })
 
+const mapDispatchToProps = (dispatch, ownProps) => ({
+  onRoutingTransitionStart: () => dispatch(routingTransitionReset()),
+  onToggleMenu: () => dispatch(toggleMenu()),
+  onChangeRoute: (to) => dispatch(routingTransitionOut({
+    from: ownProps.location.pathname,
+    to
+  }))
+})
+
 export default withRouter(connect(
   mapStateToProps,
-  null
+  mapDispatchToProps
 )(MainNav))
