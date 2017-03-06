@@ -26,6 +26,8 @@ function withPreloader(ComposedComponent) {
     componentWillReceiveProps(nextProps) {
       this.cancel()
 
+      if (nextProps.transition) return
+
       this.setState({
         preloaded: false,
         destroyed: false

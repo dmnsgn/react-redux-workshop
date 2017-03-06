@@ -2,13 +2,31 @@ import './style.css'
 
 import React, { Component } from 'react'
 import { findDOMNode } from 'react-dom'
+import { connect } from 'react-redux'
+import { matchPath } from 'react-router'
 import { translate, Interpolate } from 'react-i18next'
+import { TweenMax, Quad } from 'gsap'
+
+import { routingTransitionReset } from '../../actions'
 
 import withPreloader from '../withPreloader'
 
 import { default as UtilsPreloader } from '../../utils/preloader'
 
+import { ROUTES, COLORS } from '../../config'
+
 class Home extends Component {
+  componentWillReceiveProps(nextProps) {
+    const { transition } = nextProps
+
+    const transitionFrom = transition.from === ROUTES.get('home')
+    const transitionToScene = matchPath(transition.to, ROUTES.get('scene'))
+
+    if (transitionFrom && transitionToScene) {
+      this.hide(transition)
+    }
+  }
+
   componentDidUpdate(prevProps) {
     const { ready } = this.props
 
@@ -30,6 +48,44 @@ class Home extends Component {
 
   componentWillUnmount() {
     createjs.Sound.stop('audio-home')
+  }
+
+  hide(transition) {
+    const content = findDOMNode(this.contentRef)
+    const title = findDOMNode(this.titleRef)
+    const copy = findDOMNode(this.copyRef)
+    const background = findDOMNode(this.backgroundRef)
+
+    TweenMax.killTweensOf(title)
+    TweenMax.killTweensOf(copy)
+    TweenMax.killTweensOf(content)
+    TweenMax.killTweensOf(background)
+
+    TweenMax.to(title, 0.5, {
+      opacity: 0,
+      y: -100,
+      ease: Quad.easeInOut,
+    })
+    TweenMax.to(copy, 0.5, {
+      opacity: 0,
+      y: 100,
+      delay: 0.25,
+      ease: Quad.easeInOut,
+    })
+    TweenMax.to(content, 0.5, {
+      backgroundColor: COLORS.get('preloader-background'),
+      ease: Quad.easeInOut,
+      delay: 0.5
+    })
+    TweenMax.to(background, 0.5, {
+      opacity: 0,
+      delay: 0.5,
+      ease: Quad.easeInOut,
+      onComplete: () => {
+        this.props.onHideComplete()
+        this.props.push(transition.to)
+      }
+    })
   }
 
   render() {
@@ -72,4 +128,14 @@ class Home extends Component {
   }
 }
 
-export default translate([], { wait: true })(withPreloader(Home))
+const mapStateToProps = (state) => ({
+  transition: state.routing.transition
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  onHideComplete: () => dispatch(routingTransitionReset())
+})
+
+export default translate([], { wait: true })(
+  connect(mapStateToProps, mapDispatchToProps)(withPreloader(Home))
+)

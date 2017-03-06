@@ -2,19 +2,19 @@ import './style.css'
 
 import React, { Component } from 'react'
 import { findDOMNode } from 'react-dom'
-import { translate } from 'react-i18next'
+import { connect } from 'react-redux'
+import { matchPath } from 'react-router'
+import { TweenMax, Quad } from 'gsap'
+
+import { routingTransitionReset } from '../../actions'
+
+import withPreloader from '../withPreloader'
 
 import { default as UtilsPreloader } from '../../utils/preloader'
 
+import { ROUTES, COLORS } from '../../config'
+
 class Scene extends Component {
-  constructor(props) {
-    super(props)
-
-    this.state = {
-      ready: false
-    }
-  }
-
   componentDidMount() {
     const { match } = this.props
     const sceneId = `scene-${match.params.id}`
@@ -26,25 +26,21 @@ class Scene extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { match } = this.props
+    const { transition } = nextProps
 
-    if (match.params.id !== nextProps.match.params.id) {
-      this.setState({ ready: false })
-      const sceneId = `scene-${nextProps.match.params.id}`
+    const transitionFrom = matchPath(transition.from, ROUTES.get('scene'))
+    const transitionToHome = matchPath(transition.to, ROUTES.get('home'))
 
-      const pAssets = UtilsPreloader.loadManifest(sceneId)
-      pAssets.then(() => {
-        this.setState({ ready: true })
-      })
+    if (transitionFrom && transitionToHome) {
+      this.hide(transition)
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    const { ready } = this.state
-    const { match } = this.props
+  componentDidUpdate(prevProps) {
+    const { match, ready } = this.props
     const sceneId = `scene-${match.params.id}`
 
-    if (!prevState.ready && ready) {
+    if (!prevProps.ready && ready) {
       createjs.Sound.play(`audio-${sceneId}`, { loop: -1, volume: 0.3 })
       const content = findDOMNode(this.contentRef)
       const background = findDOMNode(this.backgroundRef)
@@ -64,9 +60,38 @@ class Scene extends Component {
     createjs.Sound.stop(audioId)
   }
 
+  hide(transition) {
+    const content = findDOMNode(this.contentRef)
+    const title = findDOMNode(this.titleRef)
+    const background = findDOMNode(this.backgroundRef)
+
+    TweenMax.killTweensOf(title)
+    TweenMax.killTweensOf(content)
+    TweenMax.killTweensOf(background)
+
+    TweenMax.to(title, 0.5, {
+      opacity: 0,
+      y: -100,
+      ease: Quad.easeInOut,
+    })
+    TweenMax.to(content, 0.5, {
+      backgroundColor: COLORS.get('preloader-background'),
+      ease: Quad.easeInOut,
+      delay: 0.25
+    })
+    TweenMax.to(background, 0.5, {
+      opacity: 0,
+      delay: 0.25,
+      ease: Quad.easeInOut,
+      onComplete: () => {
+        this.props.onHideComplete()
+        this.props.push(transition.to)
+      }
+    })
+  }
+
   render() {
-    const { ready } = this.state
-    const { match } = this.props
+    const { match, ready } = this.props
 
     const sceneId = `scene-${match.params.id}`
 
@@ -93,4 +118,12 @@ class Scene extends Component {
   }
 }
 
-export default translate([], { wait: true })(Scene)
+const mapStateToProps = (state) => ({
+  transition: state.routing.transition
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  onHideComplete: () => dispatch(routingTransitionReset())
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(withPreloader(Scene))

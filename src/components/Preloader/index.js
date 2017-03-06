@@ -33,6 +33,8 @@ class Preloader extends Component {
   animate() {
     const titleGroup = findDOMNode(this.titleGroupRef)
 
+    if (!titleGroup) return
+
     TweenMax.killTweensOf(titleGroup)
 
     TweenMax.to(titleGroup, 0.5, {
