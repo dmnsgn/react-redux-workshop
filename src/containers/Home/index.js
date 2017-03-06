@@ -4,6 +4,8 @@ import React, { Component } from 'react'
 import { findDOMNode } from 'react-dom'
 import { translate, Interpolate } from 'react-i18next'
 
+import withPreloader from '../withPreloader'
+
 import { default as UtilsPreloader } from '../../utils/preloader'
 
 class Home extends Component {
@@ -86,4 +88,4 @@ class Home extends Component {
   }
 }
 
-export default translate([], { wait: true })(Home)
+export default translate([], { wait: true })(withPreloader(Home))
