@@ -9,25 +9,10 @@ import withPreloader from '../withPreloader'
 import { default as UtilsPreloader } from '../../utils/preloader'
 
 class Home extends Component {
-  constructor(props) {
-    super(props)
+  componentDidUpdate(prevProps) {
+    const { ready } = this.props
 
-    this.state = {
-      ready: false
-    }
-  }
-
-  componentDidMount() {
-    const pAssets = UtilsPreloader.loadManifest('home')
-    pAssets.then(() => {
-      this.setState({ ready: true })
-    })
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    const { ready } = this.state
-
-    if (!prevState.ready && ready) {
+    if (!prevProps.ready && ready) {
       createjs.Sound.play('audio-home', { loop: -1, volume: 0.3 })
       const content = findDOMNode(this.contentRef)
       const background = findDOMNode(this.backgroundRef)
@@ -48,8 +33,7 @@ class Home extends Component {
   }
 
   render() {
-    const { ready } = this.state
-    const { t } = this.props
+    const { t, ready } = this.props
 
     let background
     if (ready) {

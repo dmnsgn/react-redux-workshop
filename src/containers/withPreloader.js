@@ -1,6 +1,12 @@
 import React, { Component } from 'react'
+import { withRouter } from 'react-router'
 
 import Preloader from '../components/Preloader'
+
+import { default as UtilsPreloader } from '../utils/preloader'
+import { makeCancelable } from '../utils/promises'
+
+import { ROUTES } from '../config'
 
 function withPreloader(ComposedComponent) {
   class withPreloaderWrapper extends Component {
@@ -13,20 +19,81 @@ function withPreloader(ComposedComponent) {
       }
     }
 
-    resolveAnimation() {
-      console.log('Preloader animation complete')
-
-      this.setState({
-        preloaded: true
-      })
+    componentDidMount() {
+      this.initPreloader()
     }
 
-    destroyPreloader() {
-      console.log('Preloader destroy')
+    componentWillReceiveProps(nextProps) {
+      this.cancel()
 
       this.setState({
-        destroyed: true
+        preloaded: false,
+        destroyed: false
       })
+
+      this.initPreloader(nextProps)
+    }
+
+    componentWillUnmount() {
+      this.cancel()
+    }
+
+    cancel() {
+      for (const p of this.pCancelables) {
+        p.cancel()
+      }
+    }
+
+    initPreloader(props) {
+      const { match } = props || this.props
+
+      let pageManifestId
+      switch (match.path) {
+        case undefined:
+          pageManifestId = 'home'
+          break
+        case ROUTES.get('home'):
+          pageManifestId = 'home'
+          break
+        case ROUTES.get('scene'):
+          pageManifestId = `scene-${match.params.id}`
+          break
+        default:
+          break
+      }
+
+      const pMain = makeCancelable(UtilsPreloader.loadManifest('main'))
+      const pPageContent = makeCancelable(UtilsPreloader.loadManifest(pageManifestId))
+      const pAnimation = makeCancelable(new Promise((resolve) => {
+        this.pAnimationResolve = resolve
+      }))
+      this.pCancelables = [pMain, pPageContent, pAnimation]
+
+      Promise.all(this.pCancelables.map(p => p.promise))
+        .then(() => {
+          this.setState({
+            preloaded: true
+          })
+        })
+        .catch(({ isCanceled, ...error }) => null)
+    }
+
+    resolveAnimation(props) {
+      const { location } = this.props
+
+      if (location.pathname === props.location.pathname && !this._calledComponentWillUnmount) {
+        this.pAnimationResolve()
+      }
+    }
+
+    destroyPreloader(props) {
+      const { location } = this.props
+
+      if (location.pathname === props.location.pathname && !this._calledComponentWillUnmount) {
+        this.setState({
+          destroyed: true
+        })
+      }
     }
 
     render() {
@@ -37,17 +104,17 @@ function withPreloader(ComposedComponent) {
           {!destroyed &&
             <Preloader
               hide={preloaded}
-              animateComplete={this.resolveAnimation.bind(this)}
-              hideComplete={this.destroyPreloader.bind(this)}
+              animateComplete={this.resolveAnimation.bind(this, this.props)}
+              hideComplete={this.destroyPreloader.bind(this, this.props)}
             />
           }
-          <ComposedComponent {...this.props} />
+          <ComposedComponent {...this.props} ready={preloaded} />
         </main>
       )
     }
   }
 
-  return withPreloaderWrapper
+  return withRouter(withPreloaderWrapper)
 }
 
 export default withPreloader
