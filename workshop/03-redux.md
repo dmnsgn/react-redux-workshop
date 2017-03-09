@@ -63,6 +63,7 @@ MyComponent.contextTypes = {
 ```
 
 But this is unstable to use it directly:
+
 * Any API change will break every context provider and consumer
 * The context is a global variable in the scope of a single React subtree = components are tightly coupled
 * `shouldComponentUpdate` will collide with it and prevent updates in some cases
@@ -97,6 +98,7 @@ const ConsumerComponent = Consume(MyComponent)
 ```
 
 This has some advantages:
+
 * Isolation: there is no risk of method or property collision in your class.
 * Interoperability: it works with any React Component, no matter how it was defined.
 * Maintainability: the wrapper component will only have one functionality, which makes it easier to reason about.
